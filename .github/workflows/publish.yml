@@ -1,0 +1,27 @@
+name: Publish Antora
+on: [push, pull_request]
+
+concurrency:
+  group: ${{format('{0}:{1}', github.repository, github.ref)}}
+  cancel-in-progress: true
+
+
+jobs:
+  build:
+    name: Publish Antora Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Publish Libs
+        uses: ./.github/actions/antora_publish
+        with:
+          playbook: libs.yml
+          artifact: libs
+
+      - name: Publish Site
+        uses: ./.github/actions/antora_publish
+        with:
+          playbook: site.yml
+          artifact: site
