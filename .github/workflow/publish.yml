@@ -1,0 +1,21 @@
+name: Publish to GitHub Pages
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Publish Libs
+        uses: ./.github/actions/antora_publish
+        with:
+          playbook: libs.yml
+          artifact: libs
+
+      - name: Publish Site
+        uses: ./.github/actions/antora_publish
+        with:
+          playbook: site.yml
+          artifact: site

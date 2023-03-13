@@ -1,0 +1,54 @@
+name: 'Antora Publish'
+description: 'Build and Publish an Antora documentation website'
+inputs:
+  playbook:
+    description: 'The playbook file.'
+    required: false
+    default: 'site.yml'
+  options:
+    description: 'Extra antora options'
+    required: false
+    default: ''
+  extensions:
+    description: 'A comma separated list of antora extensions to install (ex: @antora/lunr-extension)'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install Antora
+      shell: bash
+      run: npm i antora
+
+    - name: Install Antora Extensions
+      if: inputs.extensions != ''
+      shell: bash
+      run: |
+        extensions=${{ inputs.extensions }}
+        for extension in ${extensions//,/ }
+        do
+            npm i "$extension"
+        done
+
+    - name: Generate Site
+      shell: bash
+      run: npx antora ${{ inputs.options }} ${{ inputs.playbook }}
+
+    - name: Publish as Artifact
+      if: inputs.artifact != ''
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.artifact }}
+        path: build
+
+    - name: Publish to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: build
